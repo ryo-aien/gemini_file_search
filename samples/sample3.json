@@ -1,0 +1,50 @@
+{
+  "title": "Gemini API Pricing",
+  "last_updated": "2025-01-15",
+  "tiers": [
+    {
+      "name": "Free",
+      "storage_limit": "1 GB",
+      "features": [
+        "Basic file search",
+        "Up to 1000 queries per day",
+        "Standard support"
+      ],
+      "price": "$0/month"
+    },
+    {
+      "name": "Pro",
+      "storage_limit": "100 GB",
+      "features": [
+        "Advanced file search",
+        "Unlimited queries",
+        "Priority support",
+        "Custom metadata filtering"
+      ],
+      "price": "$20/month"
+    },
+    {
+      "name": "Enterprise",
+      "storage_limit": "1 TB",
+      "features": [
+        "Enterprise file search",
+        "Unlimited queries",
+        "Dedicated support",
+        "Custom SLA",
+        "Advanced analytics"
+      ],
+      "price": "Contact sales"
+    }
+  ],
+  "indexing_cost": {
+    "description": "Embedding indexing cost",
+    "rate": "$0.15 per 1 million tokens",
+    "notes": "Storage and query-time embeddings are complimentary"
+  },
+  "supported_models": [
+    "gemini-3-pro-preview",
+    "gemini-2.5-pro",
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite"
+  ]
+}
