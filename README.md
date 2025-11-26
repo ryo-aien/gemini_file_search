@@ -2,7 +2,7 @@
 
 完全機能実装版のGemini API Google File Search システムです。FastAPIバックエンド、シンプルなWeb UI、Docker対応、包括的なテストを含みます。
 
-## 📋 概要
+## 概要
 
 このプロジェクトは、Google の Gemini API File Search 機能の完全な実装です。以下の公式ドキュメントに準拠しています：
 
@@ -10,25 +10,25 @@
 - [File Search Stores API](https://ai.google.dev/api/file-search/file-search-stores?hl=ja)
 - [Documents API](https://ai.google.dev/api/file-search/documents?hl=ja)
 
-## ✨ 主要機能
+## 主要機能
 
 ### API機能（全エンドポイント対応）
 
 #### File Search Stores
-- ✅ `POST /api/stores` - ストア作成
-- ✅ `GET /api/stores` - ストア一覧（ページネーション対応）
-- ✅ `GET /api/stores/{store_id}` - ストア取得
-- ✅ `DELETE /api/stores/{store_id}` - ストア削除（force パラメータ対応）
+- `POST /api/stores` - ストア作成
+- `GET /api/stores` - ストア一覧（ページネーション対応）
+- `GET /api/stores/{store_id}` - ストア取得
+- `DELETE /api/stores/{store_id}` - ストア削除（force パラメータ対応）
 
 #### Documents
-- ✅ `GET /api/stores/{store_id}/documents` - ドキュメント一覧（ページネーション対応）
-- ✅ `GET /api/stores/{store_id}/documents/{document_id}` - ドキュメント取得
-- ✅ `DELETE /api/stores/{store_id}/documents/{document_id}` - ドキュメント削除
+- `GET /api/stores/{store_id}/documents` - ドキュメント一覧（ページネーション対応）
+- `GET /api/stores/{store_id}/documents/{document_id}` - ドキュメント取得
+- `DELETE /api/stores/{store_id}/documents/{document_id}` - ドキュメント削除
 
 #### Media Upload
-- ✅ `POST /api/stores/{store_id}/upload` - ファイルアップロード（`media.uploadToFileSearchStore`）
-- ✅ `POST /api/stores/{store_id}/import` - 既存ファイルのインポート
-- ✅ `GET /api/operations/{operation_name}` - 長時間実行オペレーションのステータス取得
+- `POST /api/stores/{store_id}/upload` - ファイルアップロード（`media.uploadToFileSearchStore`）
+- `POST /api/stores/{store_id}/import` - 既存ファイルのインポート
+- `GET /api/operations/{operation_name}` - 長時間実行オペレーションのステータス取得
 
 ### Web UI機能
 
@@ -42,15 +42,15 @@
 
 ### 運用機能
 
-- ✅ エラーハンドリングとロギング
-- ✅ リトライ機構（指数バックオフ）
-- ✅ タイムアウト設定
-- ✅ ファイルサイズ制限（最大100MB）
-- ✅ 拡張子バリデーション
-- ✅ ヘルスチェックエンドポイント
-- ✅ OpenAPI/Swagger ドキュメント自動生成
+- エラーハンドリングとロギング
+- リトライ機構（指数バックオフ）
+- タイムアウト設定
+- ファイルサイズ制限（最大100MB）
+- 拡張子バリデーション
+- ヘルスチェックエンドポイント
+- OpenAPI/Swagger ドキュメント自動生成
 
-## 🏗️ プロジェクト構造
+## プロジェクト構造
 
 ```
 .
@@ -80,7 +80,7 @@
 └── README.md              # このファイル
 ```
 
-## 🚀 セットアップ手順
+## セットアップ手順
 
 ### 前提条件
 
@@ -118,7 +118,7 @@ docker compose up --build
 - **API ドキュメント**: http://localhost:8000/api/docs
 - **ReDoc**: http://localhost:8000/api/redoc
 
-## 🛠️ ローカル開発（Python直接実行）
+## ローカル開発（Python直接実行）
 
 ### 1. 仮想環境の作成
 
@@ -141,7 +141,7 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-## 🧪 テスト
+## テスト
 
 ### ユニットテスト実行
 
@@ -174,7 +174,7 @@ black --check .
 mypy app/
 ```
 
-## 📖 API エンドポイント対応表
+## API エンドポイント対応表
 
 | エンドポイント | HTTPメソッド | 説明 | 公式ドキュメント参照 |
 |-------------|------------|------|-------------------|
@@ -189,7 +189,7 @@ mypy app/
 | `/api/stores/{id}/documents/{doc_id}` | DELETE | ドキュメント削除 | [documents.delete](https://ai.google.dev/api/file-search/documents#method:-filesearchstores.documents.delete) |
 | `/api/operations/{name}` | GET | オペレーション状態取得 | [Operations](https://ai.google.dev/api/file-search/file-search-stores#Operation) |
 
-## 🎯 使用例
+## 使用例
 
 ### cURLでの例
 
@@ -237,7 +237,7 @@ response = httpx.get(f"{API_BASE}/stores/{store_id}/documents")
 documents = response.json()["documents"]
 ```
 
-## 🔧 設定
+## 設定
 
 環境変数で以下を設定可能：
 
@@ -252,7 +252,7 @@ documents = response.json()["documents"]
 | `API_TIMEOUT` | 60 | APIタイムアウト（秒） |
 | `API_MAX_RETRIES` | 3 | 最大リトライ回数 |
 
-## 📦 対応ファイル形式
+## 対応ファイル形式
 
 - Plain text (`.txt`)
 - Markdown (`.md`)
@@ -262,7 +262,7 @@ documents = response.json()["documents"]
 - JSON (`.json`)
 - Microsoft Word (`.doc`, `.docx`)
 
-## ⚠️ 制約・既知の問題
+## 制約・既知の問題
 
 1. **ファイルサイズ制限**: 最大100MBまで（Google API制限）
 2. **ストレージ制限**:
@@ -272,48 +272,13 @@ documents = response.json()["documents"]
 3. **推奨ストアサイズ**: 個別ストアは20GB以下が推奨
 4. **検索機能**: 現在の実装では検索エンドポイントは含まれていません（Gemini モデルとの統合が必要）
 
-## 🔐 セキュリティ
+## セキュリティ
 
 - API キーはサーバーサイドでのみ管理
 - ファイル拡張子・サイズのバリデーション
 - CORS設定（ローカル開発用に最小限）
 - 入力検証（Pydantic使用）
 
-## 🤝 貢献
-
-プルリクエスト歓迎です！
-
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📄 ライセンス
-
-MIT License
-
-## 🙏 謝辞
-
-- [Google Gemini API](https://ai.google.dev/)
-- [FastAPI](https://fastapi.tiangolo.com/)
-- [Pydantic](https://docs.pydantic.dev/)
-
-## 📞 サポート
-
-問題が発生した場合：
-
-1. [Issues](https://github.com/yourusername/gemini-file-search/issues)で既存の問題を確認
-2. 新しいissueを作成して詳細を報告
-
-## 🗺️ ロードマップ
-
-- [ ] 検索エンドポイントの実装（Gemini モデル統合）
-- [ ] メタデータフィルタリング機能
-- [ ] バッチアップロード機能
-- [ ] ドキュメント更新機能
-- [ ] より詳細な分析・統計機能
-- [ ] Streamlit代替UI
 
 ---
 
