@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import Annotated
 
 from fastapi import Depends
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,7 +20,11 @@ class Settings(BaseSettings):
 
     # Application
     app_host: str = "0.0.0.0"
-    app_port: int = 8000
+    # Prefer Cloud Run's PORT env var, fallback to APP_PORT/local default
+    app_port: int = Field(
+        default=8000,
+        validation_alias=AliasChoices("PORT", "APP_PORT"),
+    )
     app_reload: bool = True
     log_level: str = "INFO"
 

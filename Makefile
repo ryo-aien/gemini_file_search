@@ -26,7 +26,7 @@ install:
 	pip install -r requirements.txt
 
 run:
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	PORT=$${PORT:-$${APP_PORT:-8000}} uvicorn app.main:app --reload --host 0.0.0.0 --port $$PORT
 
 test:
 	pytest -v
@@ -55,8 +55,8 @@ docker-build:
 
 docker-up:
 	docker compose up -d
-	@echo "Application is running at http://localhost:8000"
-	@echo "API docs at http://localhost:8000/api/docs"
+	@echo "Application is running at http://localhost:$${APP_PORT:-8000}"
+	@echo "API docs at http://localhost:$${APP_PORT:-8000}/api/docs"
 
 docker-down:
 	docker compose down

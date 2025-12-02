@@ -114,7 +114,7 @@ docker compose up --build
 
 アプリケーションが起動したら、ブラウザで開く：
 
-- **Web UI**: http://localhost:8000
+- **Web UI**: http://localhost:8000 （環境変数 `APP_PORT`/`PORT` で変更可、Cloud Run では自動で `PORT=8080`）
 - **API ドキュメント**: http://localhost:8000/api/docs
 - **ReDoc**: http://localhost:8000/api/redoc
 
@@ -140,6 +140,12 @@ pip install -r requirements.txt
 ```bash
 uvicorn app.main:app --reload
 ```
+
+## Cloud Run デプロイでの注意点
+
+- Cloud Run は `PORT`（デフォルト 8080）を自動的に注入します。本リポジトリの Dockerfile / uvicorn コマンドは `PORT` を最優先でリッスンするよう調整済みです。
+- `PORT` が無いローカル環境では `APP_PORT`（デフォルト 8000）を使用します。必要に応じて `.env` で `PORT` または `APP_PORT` を設定してください。
+- ファイルは `/tmp/uploads` に置かれ、コンテナ再起動時に消えることを前提としたステートレス構成です。永続化が必要な場合は外部ストレージを利用してください。
 
 ## テスト
 
@@ -245,7 +251,8 @@ documents = response.json()["documents"]
 |-------|---------|------|
 | `GOOGLE_API_KEY` | - | Google AI API キー（必須） |
 | `APP_HOST` | 0.0.0.0 | ホストアドレス |
-| `APP_PORT` | 8000 | ポート番号 |
+| `PORT` | Cloud Run: 自動（デフォルト 8080）/ ローカル: 8000 | Cloud Run が付与するリッスンポート。ローカルでは環境変数で上書き可 |
+| `APP_PORT` | 8000 | ローカル/Compose 用のポート。`PORT` 未設定時に使用 |
 | `LOG_LEVEL` | INFO | ログレベル |
 | `MAX_UPLOAD_SIZE` | 104857600 | 最大アップロードサイズ（バイト、100MB） |
 | `ALLOWED_EXTENSIONS` | .txt,.pdf,... | 許可する拡張子 |

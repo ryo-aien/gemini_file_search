@@ -7,12 +7,13 @@ services:
       dockerfile: Dockerfile
     container_name: gemini-file-search
     ports:
-      - "${APP_PORT:-8000}:8000"
+      - "${APP_PORT:-8000}:${APP_PORT:-8000}"
     env_file:
       - .env
     environment:
+      - PORT=${APP_PORT:-8000}
       - APP_HOST=0.0.0.0
-      - APP_PORT=8000
+      - APP_PORT=${APP_PORT:-8000}
     volumes:
       # Mount app directory for development hot-reload
       - ./app:/app/app
@@ -20,7 +21,7 @@ services:
       - ./samples:/app/samples:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${APP_PORT:-8000}/health"]
       interval: 30s
       timeout: 10s
       retries: 3

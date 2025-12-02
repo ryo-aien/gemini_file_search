@@ -33,12 +33,12 @@ COPY pyproject.toml .
 RUN mkdir -p /tmp/uploads && \
     chmod 777 /tmp/uploads
 
-# Expose port
-EXPOSE 8000
+# Expose default Cloud Run port (overridden by PORT env var)
+EXPOSE 8080
 
-# Health check
+# Health check uses PORT if provided (Cloud Run sets this automatically)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD sh -c 'curl -f http://localhost:${PORT:-8080}/health || exit 1'
 
 # Run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

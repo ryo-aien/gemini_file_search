@@ -20,6 +20,11 @@ if ! grep -q "GOOGLE_API_KEY=.*[a-zA-Z0-9]" .env; then
     echo "Please check your .env file"
 fi
 
+# Decide which port to use (Cloud Run provides PORT; fall back to .env or 8000)
+PORT_FROM_FILE=$(grep -E '^PORT=' .env | tail -n1 | cut -d '=' -f2)
+APP_PORT_FROM_FILE=$(grep -E '^APP_PORT=' .env | tail -n1 | cut -d '=' -f2)
+export PORT="${PORT:-${APP_PORT:-${PORT_FROM_FILE:-${APP_PORT_FROM_FILE:-8000}}}}"
+
 # Dockerで起動するか、ローカルで起動するか選択
 echo "How do you want to start the application?"
 echo "1) Docker (recommended)"
@@ -53,10 +58,10 @@ case $choice in
 
         echo ""
         echo "Starting application..."
-        echo "Access the app at: http://localhost:8000"
-        echo "API docs at: http://localhost:8000/api/docs"
+        echo "Access the app at: http://localhost:${PORT}"
+        echo "API docs at: http://localhost:${PORT}/api/docs"
         echo ""
-        uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+        uvicorn app.main:app --reload --host 0.0.0.0 --port "${PORT}"
         ;;
     *)
         echo "Invalid choice"
