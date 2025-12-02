@@ -4,6 +4,7 @@ const API_BASE = '/api';
 // Global state
 let stores = [];
 let currentStoreId = null;
+const defaultFileLabel = 'ファイルが選択されていません';
 
 // Utility: Show toast notification
 function showToast(title, message, type = 'info') {
@@ -61,12 +62,58 @@ document.querySelectorAll('.tab-button').forEach(button => {
     });
 });
 
+// Upload UI interactions
+const fileInputElement = document.getElementById('file-input');
+const fileDropZone = document.getElementById('file-drop-zone');
+const fileSelectedName = document.getElementById('file-selected-name');
+
+function updateSelectedFileName(file) {
+    if (file) {
+        fileSelectedName.textContent = file.name;
+        fileDropZone.classList.add('has-file');
+    } else {
+        fileSelectedName.textContent = defaultFileLabel;
+        fileDropZone.classList.remove('has-file');
+    }
+}
+
+if (fileInputElement) {
+    fileInputElement.addEventListener('change', (e) => {
+        updateSelectedFileName(e.target.files[0]);
+    });
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    fileDropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        fileDropZone.classList.add('dragging');
+    });
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    fileDropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        fileDropZone.classList.remove('dragging');
+    });
+});
+
+fileDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const droppedFile = e.dataTransfer.files[0];
+    if (!droppedFile) return;
+
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(droppedFile);
+    fileInputElement.files = dataTransfer.files;
+    updateSelectedFileName(droppedFile);
+});
+
 // Load stores
 async function loadStores() {
     try {
         const response = await fetch(`${API_BASE}/stores`);
         if (!response.ok) {
-            throw new Error(`Failed to load stores: ${response.statusText}`);
+            throw new Error(`ストア一覧の取得に失敗しました: ${response.statusText}`);
         }
 
         const data = await response.json();
@@ -75,10 +122,10 @@ async function loadStores() {
         renderStoresList();
         updateStoreSelects();
 
-        showToast('Success', `Loaded ${stores.length} store(s)`, 'success');
+        showToast('成功', `${stores.length} 件のストアを読み込みました`, 'success');
     } catch (error) {
-        console.error('Error loading stores:', error);
-        showToast('Error', error.message, 'error');
+        console.error('ストア取得エラー:', error);
+        showToast('エラー', error.message, 'error');
     }
 }
 
@@ -87,7 +134,7 @@ function renderStoresList() {
     const container = document.getElementById('stores-list');
 
     if (stores.length === 0) {
-        container.innerHTML = '<p>No stores found. Create one to get started.</p>';
+        container.innerHTML = '<p>ストアがまだありません。まずは作成してください。</p>';
         return;
     }
 
@@ -101,20 +148,20 @@ function renderStoresList() {
                     </div>
                     <div class="data-item-actions">
                         <button class="btn btn-secondary btn-sm" onclick="viewStoreDetails('${storeId}')">
-                            View Details
+                            詳細を見る
                         </button>
                         <button class="btn btn-danger btn-sm" onclick="deleteStore('${storeId}')">
-                            Delete
+                            削除
                         </button>
                     </div>
                 </div>
                 <div class="data-item-info">
                     <div><strong>ID:</strong> ${storeId}</div>
-                    <div><strong>Active Documents:</strong> ${store.activeDocumentsCount}</div>
-                    <div><strong>Pending Documents:</strong> ${store.pendingDocumentsCount}</div>
-                    <div><strong>Failed Documents:</strong> ${store.failedDocumentsCount}</div>
-                    <div><strong>Size:</strong> ${formatBytes(store.sizeBytes)}</div>
-                    <div><strong>Created:</strong> ${formatDate(store.createTime)}</div>
+                    <div><strong>処理中ドキュメント:</strong> ${store.activeDocumentsCount}</div>
+                    <div><strong>保留ドキュメント:</strong> ${store.pendingDocumentsCount}</div>
+                    <div><strong>失敗ドキュメント:</strong> ${store.failedDocumentsCount}</div>
+                    <div><strong>サイズ:</strong> ${formatBytes(store.sizeBytes)}</div>
+                    <div><strong>作成日時:</strong> ${formatDate(store.createTime)}</div>
                 </div>
             </div>
         `;
@@ -131,8 +178,8 @@ function updateStoreSelects() {
         return `<option value="${storeId}">${store.displayName || store.name}</option>`;
     }).join('');
 
-    uploadSelect.innerHTML = '<option value="">-- Select a Store --</option>' + options;
-    documentsSelect.innerHTML = '<option value="">-- Select a Store --</option>' + options;
+    uploadSelect.innerHTML = '<option value="">-- ストアを選択 --</option>' + options;
+    documentsSelect.innerHTML = '<option value="">-- ストアを選択 --</option>' + options;
 
     // Also update search store select
     updateSearchStoreSelect();
@@ -155,19 +202,19 @@ document.getElementById('create-store-form').addEventListener('submit', async (e
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Failed to create store');
+            throw new Error(error.detail || 'ストアの作成に失敗しました');
         }
 
         const store = await response.json();
-        showToast('Success', `Store created: ${store.name}`, 'success');
+        showToast('成功', `ストアを作成しました: ${store.name}`, 'success');
 
         // Reset form and reload stores
         document.getElementById('store-display-name').value = '';
         await loadStores();
 
     } catch (error) {
-        console.error('Error creating store:', error);
-        showToast('Error', error.message, 'error');
+        console.error('ストア作成エラー:', error);
+        showToast('エラー', error.message, 'error');
     }
 });
 
@@ -176,19 +223,19 @@ async function viewStoreDetails(storeId) {
     try {
         const response = await fetch(`${API_BASE}/stores/${storeId}`);
         if (!response.ok) {
-            throw new Error('Failed to load store details');
+            throw new Error('ストア詳細の取得に失敗しました');
         }
 
         const store = await response.json();
         alert(JSON.stringify(store, null, 2));
     } catch (error) {
-        showToast('Error', error.message, 'error');
+        showToast('エラー', error.message, 'error');
     }
 }
 
 // Delete store
 async function deleteStore(storeId) {
-    if (!confirm('Are you sure you want to delete this store? This will also delete all documents (force=true).')) {
+    if (!confirm('このストアを削除しますか？関連ドキュメントも削除されます（force=true）。')) {
         return;
     }
 
@@ -199,15 +246,15 @@ async function deleteStore(storeId) {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Failed to delete store');
+            throw new Error(error.detail || 'ストアの削除に失敗しました');
         }
 
-        showToast('Success', 'Store deleted successfully', 'success');
+        showToast('成功', 'ストアを削除しました', 'success');
         await loadStores();
 
     } catch (error) {
-        console.error('Error deleting store:', error);
-        showToast('Error', error.message, 'error');
+        console.error('ストア削除エラー:', error);
+        showToast('エラー', error.message, 'error');
     }
 }
 
@@ -217,14 +264,14 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
 
     const storeId = document.getElementById('upload-store-select').value;
     if (!storeId) {
-        showToast('Error', 'Please select a store', 'error');
+        showToast('エラー', 'ストアを選択してください', 'error');
         return;
     }
 
     const fileInput = document.getElementById('file-input');
     const file = fileInput.files[0];
     if (!file) {
-        showToast('Error', 'Please select a file', 'error');
+        showToast('エラー', 'ファイルを選択してください', 'error');
         return;
     }
 
@@ -247,7 +294,7 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
     try {
         progressContainer.style.display = 'block';
         progressFill.style.width = '50%';
-        progressText.textContent = 'Uploading...';
+        progressText.textContent = 'アップロード中...';
 
         const response = await fetch(`${API_BASE}/stores/${storeId}/upload`, {
             method: 'POST',
@@ -256,18 +303,19 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Failed to upload file');
+            throw new Error(error.detail || 'ファイルのアップロードに失敗しました');
         }
 
         const operation = await response.json();
         progressFill.style.width = '100%';
-        progressText.textContent = 'Upload complete!';
+        progressText.textContent = 'アップロード完了！';
 
-        showToast('Success', `File uploaded. Operation: ${operation.name}`, 'success');
+        showToast('成功', `ファイルをアップロードしました。オペレーション: ${operation.name}`, 'success');
 
         // Reset form
         fileInput.value = '';
         document.getElementById('file-display-name').value = '';
+        updateSelectedFileName(null);
 
         setTimeout(() => {
             progressContainer.style.display = 'none';
@@ -275,8 +323,8 @@ document.getElementById('upload-form').addEventListener('submit', async (e) => {
         }, 2000);
 
     } catch (error) {
-        console.error('Error uploading file:', error);
-        showToast('Error', error.message, 'error');
+        console.error('アップロードエラー:', error);
+        showToast('エラー', error.message, 'error');
         progressContainer.style.display = 'none';
         progressFill.style.width = '0%';
     }
@@ -294,7 +342,7 @@ document.getElementById('refresh-documents').addEventListener('click', () => {
     if (currentStoreId) {
         loadDocuments(currentStoreId);
     } else {
-        showToast('Info', 'Please select a store first', 'info');
+        showToast('案内', '先にストアを選択してください', 'info');
     }
 });
 
@@ -302,18 +350,18 @@ async function loadDocuments(storeId) {
     try {
         const response = await fetch(`${API_BASE}/stores/${storeId}/documents`);
         if (!response.ok) {
-            throw new Error('Failed to load documents');
+            throw new Error('ドキュメント一覧の取得に失敗しました');
         }
 
         const data = await response.json();
         const documents = data.documents || [];
 
         renderDocumentsList(documents, storeId);
-        showToast('Success', `Loaded ${documents.length} document(s)`, 'success');
+        showToast('成功', `${documents.length} 件のドキュメントを読み込みました`, 'success');
 
     } catch (error) {
-        console.error('Error loading documents:', error);
-        showToast('Error', error.message, 'error');
+        console.error('ドキュメント取得エラー:', error);
+        showToast('エラー', error.message, 'error');
     }
 }
 
@@ -322,7 +370,7 @@ function renderDocumentsList(documents, storeId) {
     const container = document.getElementById('documents-list');
 
     if (documents.length === 0) {
-        container.innerHTML = '<p>No documents found in this store.</p>';
+        container.innerHTML = '<p>このストアにドキュメントはありません。</p>';
         return;
     }
 
@@ -339,15 +387,15 @@ function renderDocumentsList(documents, storeId) {
                     </div>
                     <div class="data-item-actions">
                         <button class="btn btn-danger btn-sm" onclick="deleteDocument('${storeId}', '${docId}')">
-                            Delete
+                            削除
                         </button>
                     </div>
                 </div>
                 <div class="data-item-info">
                     <div><strong>ID:</strong> ${docId}</div>
-                    <div><strong>MIME Type:</strong> ${doc.mimeType || 'N/A'}</div>
-                    <div><strong>Size:</strong> ${formatBytes(doc.sizeBytes)}</div>
-                    <div><strong>Created:</strong> ${formatDate(doc.createTime)}</div>
+                    <div><strong>MIMEタイプ:</strong> ${doc.mimeType || 'N/A'}</div>
+                    <div><strong>サイズ:</strong> ${formatBytes(doc.sizeBytes)}</div>
+                    <div><strong>作成日時:</strong> ${formatDate(doc.createTime)}</div>
                 </div>
             </div>
         `;
@@ -357,16 +405,16 @@ function renderDocumentsList(documents, storeId) {
 // Get state badge
 function getStateBadge(state) {
     const badges = {
-        'STATE_ACTIVE': '<span class="badge badge-success">Active</span>',
-        'STATE_PENDING': '<span class="badge badge-pending">Pending</span>',
-        'STATE_FAILED': '<span class="badge badge-failed">Failed</span>',
+        'STATE_ACTIVE': '<span class="badge badge-success">完了</span>',
+        'STATE_PENDING': '<span class="badge badge-pending">処理中</span>',
+        'STATE_FAILED': '<span class="badge badge-failed">失敗</span>',
     };
-    return badges[state] || '<span class="badge">Unknown</span>';
+    return badges[state] || '<span class="badge">不明</span>';
 }
 
 // Delete document
 async function deleteDocument(storeId, documentId) {
-    if (!confirm('Are you sure you want to delete this document?')) {
+    if (!confirm('このドキュメントを削除しますか？')) {
         return;
     }
 
@@ -377,15 +425,15 @@ async function deleteDocument(storeId, documentId) {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Failed to delete document');
+            throw new Error(error.detail || 'ドキュメントの削除に失敗しました');
         }
 
-        showToast('Success', 'Document deleted successfully', 'success');
+        showToast('成功', 'ドキュメントを削除しました', 'success');
         await loadDocuments(storeId);
 
     } catch (error) {
-        console.error('Error deleting document:', error);
-        showToast('Error', error.message, 'error');
+        console.error('ドキュメント削除エラー:', error);
+        showToast('エラー', error.message, 'error');
     }
 }
 
@@ -415,7 +463,7 @@ async function loadModels() {
         const models = await response.json();
 
         if (!models || models.length === 0) {
-            throw new Error('No models available');
+            throw new Error('利用可能なモデルがありません');
         }
 
         // Clear existing options
@@ -442,7 +490,7 @@ async function loadModels() {
         }
 
     } catch (error) {
-        console.error('Error loading models:', error);
+        console.error('モデル読み込みエラー:', error);
         // Fallback to hardcoded models if API fails (only file_search supported models)
         modelSelect.innerHTML = `
             <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended)</option>
@@ -466,12 +514,12 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
     const storeIds = selectedOptions.map(opt => opt.value);
 
     if (storeIds.length === 0) {
-        showToast('Error', 'Please select at least one store', 'error');
+        showToast('エラー', '検索対象のストアを一つ以上選択してください', 'error');
         return;
     }
 
     if (!query) {
-        showToast('Error', 'Please enter a search query', 'error');
+        showToast('エラー', '検索クエリを入力してください', 'error');
         return;
     }
 
@@ -494,7 +542,7 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.detail || 'Search failed');
+            throw new Error(error.detail || '検索に失敗しました');
         }
 
         const result = await response.json();
@@ -508,15 +556,15 @@ document.getElementById('search-form').addEventListener('submit', async (e) => {
                 result.sources.map(source => `<li>${source}</li>`).join('') +
                 '</ul>';
         } else {
-            sourcesDiv.innerHTML = '<p>No sources found</p>';
+            sourcesDiv.innerHTML = '<p>参照元が見つかりませんでした</p>';
         }
 
         document.getElementById('search-results').style.display = 'block';
-        showToast('Success', 'Search completed', 'success');
+        showToast('成功', '検索が完了しました', 'success');
 
     } catch (error) {
-        console.error('Search error:', error);
-        showToast('Error', error.message, 'error');
+        console.error('検索エラー:', error);
+        showToast('エラー', error.message, 'error');
     } finally {
         document.getElementById('search-loading').style.display = 'none';
     }
@@ -529,7 +577,7 @@ function updateSearchStoreSelect() {
     const options = stores.map(store => {
         const storeId = extractId(store.name);
         const displayName = store.displayName || store.name;
-        return `<option value="${storeId}">${displayName} (${store.activeDocumentsCount} docs)</option>`;
+        return `<option value="${storeId}">${displayName} (${store.activeDocumentsCount} 件)</option>`;
     }).join('');
 
     searchSelect.innerHTML = options;

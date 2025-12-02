@@ -19,32 +19,32 @@
         </header>
 
         <nav class="tabs">
-            <button class="tab-button active" data-tab="stores">Stores</button>
-            <button class="tab-button" data-tab="upload">Upload</button>
-            <button class="tab-button" data-tab="documents">Documents</button>
-            <button class="tab-button" data-tab="search">Search</button>
+            <button class="tab-button active" data-tab="stores">ストア</button>
+            <button class="tab-button" data-tab="upload">アップロード</button>
+            <button class="tab-button" data-tab="documents">ドキュメント</button>
+            <button class="tab-button" data-tab="search">検索</button>
         </nav>
 
         <main>
             <!-- Stores Tab -->
             <div id="stores-tab" class="tab-content active">
                 <section class="card">
-                    <h2>File Search Stores</h2>
+                    <h2>ファイル検索ストア</h2>
 
                     <div class="form-group">
-                        <h3>Create New Store</h3>
+                        <h3>新しいストアを作成</h3>
                         <form id="create-store-form">
                             <div class="input-group">
-                                <label for="store-display-name">Display Name (Optional):</label>
-                                <input type="text" id="store-display-name" maxlength="512" placeholder="My File Search Store">
+                                <label for="store-display-name">表示名（任意）:</label>
+                                <input type="text" id="store-display-name" maxlength="512" placeholder="ファイル検索ストア">
                             </div>
-                            <button type="submit" class="btn btn-primary">Create Store</button>
+                            <button type="submit" class="btn btn-primary">ストアを作成</button>
                         </form>
                     </div>
 
                     <div class="form-group">
-                        <h3>Existing Stores</h3>
-                        <button id="refresh-stores" class="btn btn-secondary">Refresh List</button>
+                        <h3>既存のストア</h3>
+                        <button id="refresh-stores" class="btn btn-secondary">リストを更新</button>
                         <div id="stores-list" class="data-list"></div>
                     </div>
                 </section>
@@ -53,25 +53,33 @@
             <!-- Upload Tab -->
             <div id="upload-tab" class="tab-content">
                 <section class="card">
-                    <h2>Upload Documents</h2>
+                    <h2>ドキュメントのアップロード</h2>
 
                     <div class="form-group">
-                        <label for="upload-store-select">Select Store:</label>
+                        <label for="upload-store-select">ストアを選択:</label>
                         <select id="upload-store-select">
-                            <option value="">-- Select a Store --</option>
+                            <option value="">-- ストアを選択 --</option>
                         </select>
                     </div>
 
                     <form id="upload-form" enctype="multipart/form-data">
                         <div class="form-group">
-                            <label for="file-input">Select File:</label>
-                            <input type="file" id="file-input" required>
-                            <small>Allowed: .txt, .pdf, .md, .doc, .docx, .html, .csv, .json (Max 100MB)</small>
+                            <span class="field-label">ファイルを選択</span>
+                            <label for="file-input" class="file-drop" id="file-drop-zone">
+                                <div class="file-drop-content">
+                                    <div class="file-drop-icon">↑</div>
+                                    <div class="file-drop-title">ここにファイルをドロップ</div>
+                                    <div class="file-drop-sub">またはクリックして選択</div>
+                                    <div class="file-drop-selected" id="file-selected-name">ファイルが選択されていません</div>
+                                </div>
+                            </label>
+                            <input type="file" id="file-input" class="visually-hidden" required>
+                            <small>対応拡張子: .txt, .pdf, .md, .doc, .docx, .html, .csv, .json （最大100MB）</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="file-display-name">Display Name (Optional):</label>
-                            <input type="text" id="file-display-name" placeholder="Document name">
+                            <label for="file-display-name">表示名（任意）:</label>
+                            <input type="text" id="file-display-name" placeholder="ドキュメント名">
                         </div>
 
                         <div class="form-group">
@@ -91,7 +99,7 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Upload File</button>
+                        <button type="submit" class="btn btn-primary">ファイルをアップロード</button>
                     </form>
 
                     <div id="upload-progress" class="progress-container" style="display: none;">
@@ -106,14 +114,14 @@
             <!-- Documents Tab -->
             <div id="documents-tab" class="tab-content">
                 <section class="card">
-                    <h2>Documents</h2>
+                    <h2>ドキュメント</h2>
 
                     <div class="form-group">
-                        <label for="documents-store-select">Select Store:</label>
+                        <label for="documents-store-select">ストアを選択:</label>
                         <select id="documents-store-select">
-                            <option value="">-- Select a Store --</option>
+                            <option value="">-- ストアを選択 --</option>
                         </select>
-                        <button id="refresh-documents" class="btn btn-secondary">Refresh List</button>
+                        <button id="refresh-documents" class="btn btn-secondary">リストを更新</button>
                     </div>
 
                     <div id="documents-list" class="data-list"></div>
@@ -123,43 +131,43 @@
             <!-- Search Tab -->
             <div id="search-tab" class="tab-content">
                 <section class="card">
-                    <h2>Search Documents</h2>
+                    <h2>ドキュメント検索</h2>
 
                     <form id="search-form">
                         <div class="form-group">
-                            <label for="search-store-select">Select Stores (Hold Ctrl/Cmd for multiple):</label>
+                            <label for="search-store-select">検索対象ストア（複数選択は Ctrl/Cmd）:</label>
                             <select id="search-store-select" multiple size="5">
                             </select>
-                            <small>Select one or more stores to search in</small>
+                            <small>検索対象のストアを一つ以上選択してください</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="search-query">Your Question:</label>
-                            <textarea id="search-query" rows="3" placeholder="What would you like to know about your documents?"></textarea>
+                            <label for="search-query">質問内容:</label>
+                            <textarea id="search-query" rows="3" placeholder="ドキュメントについて知りたいことを入力してください"></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="search-model">Model:</label>
+                            <label for="search-model">モデル:</label>
                             <select id="search-model">
-                                <option value="">Loading models...</option>
+                                <option value="">モデルを読み込み中...</option>
                             </select>
-                            <small>Models are loaded dynamically based on availability</small>
+                            <small>利用可能なモデルを自動取得します</small>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Search</button>
+                        <button type="submit" class="btn btn-primary">検索</button>
                     </form>
 
                     <div id="search-results" class="search-results" style="display: none;">
-                        <h3>Answer:</h3>
+                        <h3>回答:</h3>
                         <div id="search-answer" class="search-answer"></div>
 
-                        <h3>Sources:</h3>
+                        <h3>参照元:</h3>
                         <div id="search-sources" class="search-sources"></div>
                     </div>
 
                     <div id="search-loading" class="loading" style="display: none;">
                         <div class="spinner"></div>
-                        <span>Searching...</span>
+                        <span>検索中...</span>
                     </div>
                 </section>
             </div>
