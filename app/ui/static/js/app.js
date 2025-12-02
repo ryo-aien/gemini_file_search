@@ -227,7 +227,7 @@ async function viewStoreDetails(storeId) {
         }
 
         const store = await response.json();
-        alert(JSON.stringify(store, null, 2));
+        openStoreModal(store);
     } catch (error) {
         showToast('エラー', error.message, 'error');
     }
@@ -448,6 +448,65 @@ function formatBytes(bytes) {
 
 // Refresh stores button
 document.getElementById('refresh-stores').addEventListener('click', loadStores);
+
+// Store modal helpers
+const storeModal = document.getElementById('store-modal');
+const storeModalBody = document.getElementById('store-modal-body');
+const storeModalClose = document.getElementById('store-modal-close');
+
+function openStoreModal(store) {
+    const storeId = extractId(store.name);
+    const detailTemplate = `
+        <div class="detail-list">
+            <div class="detail-row">
+                <strong>ID</strong>
+                <span>${storeId}</span>
+            </div>
+            <div class="detail-row">
+                <strong>表示名</strong>
+                <span>${store.displayName || '-'}</span>
+            </div>
+            <div class="detail-row">
+                <strong>処理中ドキュメント</strong>
+                <span>${store.activeDocumentsCount}</span>
+            </div>
+            <div class="detail-row">
+                <strong>保留ドキュメント</strong>
+                <span>${store.pendingDocumentsCount}</span>
+            </div>
+            <div class="detail-row">
+                <strong>失敗ドキュメント</strong>
+                <span>${store.failedDocumentsCount}</span>
+            </div>
+            <div class="detail-row">
+                <strong>サイズ</strong>
+                <span>${formatBytes(store.sizeBytes)}</span>
+            </div>
+            <div class="detail-row">
+                <strong>作成日時</strong>
+                <span>${formatDate(store.createTime)}</span>
+            </div>
+            <div class="detail-row">
+                <strong>更新日時</strong>
+                <span>${store.updateTime ? formatDate(store.updateTime) : '-'}</span>
+            </div>
+        </div>
+    `;
+
+    storeModalBody.innerHTML = detailTemplate;
+    storeModal.style.display = 'flex';
+}
+
+function closeStoreModal() {
+    storeModal.style.display = 'none';
+}
+
+storeModalClose.addEventListener('click', closeStoreModal);
+storeModal.addEventListener('click', (e) => {
+    if (e.target === storeModal) {
+        closeStoreModal();
+    }
+});
 
 // Load available models
 async function loadModels() {
